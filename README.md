@@ -1,4 +1,4 @@
-# TattleTable
+# Tablecloth
 
 Revokes Airtable PATs (Personal Access Tokens) via enterprise admin API.
 
