@@ -3,8 +3,17 @@
 require "sinatra"
 require "json"
 require "dotenv/load"
+require "sentry-ruby"
 require_relative "lib/private_api_client"
 require_relative "lib/public_api_client"
+
+Sentry.init do |config|
+  config.dsn = ENV["SENTRY_DSN"]
+  config.breadcrumbs_logger = [:http_logger]
+  config.traces_sample_rate = 0.1
+end
+
+use Sentry::Rack::CaptureExceptions
 
 set :port, ENV.fetch("PORT", 4567)
 
@@ -64,12 +73,14 @@ post "/revoke" do
       private_client.revoke_tokens(enterprise_id: enterprise_id, token_ids: [token_id])
       { success: true, owner_email: }.to_json
     rescue StandardError => e
-      puts "revoke failed: #{e.message}"
+      Sentry.capture_exception(e)
       { success: true, owner_email:, status: "action_needed" }.to_json
     end
-  rescue JSON::ParserError
+  rescue JSON::ParserError => e
+    Sentry.capture_exception(e)
     halt 400, { error: "invalid JSON", success: false }.to_json
   rescue StandardError => e
+    Sentry.capture_exception(e)
     halt 500, { error: e.message, success: false }.to_json
   end
 end
