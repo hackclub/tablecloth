@@ -11,4 +11,4 @@ COPY . .
 
 EXPOSE 4567
 
-CMD ["bundle", "exec", "puma", "-C", "config.ru", "-b", "tcp://0.0.0.0:4567"]
+CMD ["bundle", "exec", "puma", "-b", "tcp://0.0.0.0:4567"]
